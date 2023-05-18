@@ -17,14 +17,16 @@ const int color[10]={
     0xff8000,0xc0ff00,0x00ffff,0x8000ff,0x000001,
 };
 
+UART_Protocol uart_protocol;
+
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     this->setWindowIcon(QIcon(":/Images/Icons/Alien 2.png"));
-    this->setWindowTitle(tr("串口示波器"));
-    ui->baudRate->setCurrentIndex(1);
+    this->setWindowTitle(tr("虚拟示波器"));
     this->system_init();  //系统各组件初始化
 }
 
@@ -43,7 +45,7 @@ void MainWindow::system_init()
     QLabel *permanent = new QLabel(this);
     permanent->setFrameStyle(QFrame::Box | QFrame::Sunken);
     permanent->setText(
-      tr("<a href=\"http://www.xiaozhoua.top\">xiaozhoua.top</a>"));
+      tr("<a href=\"http://www.baidu.com\">URL_TAG</a>"));
     permanent->setTextFormat(Qt::RichText);
     permanent->setOpenExternalLinks(true);
     ui->statusbar->addPermanentWidget(permanent);
@@ -52,9 +54,9 @@ void MainWindow::system_init()
     statusLabel->setFrameShape(QFrame::WinPanel); // 设置标签形状
     statusLabel->setFrameShadow(QFrame::Sunken); // 设置标签阴影
     ui->statusbar->addWidget(statusLabel);
-    statusLabel->setText(tr("所属人：Xiaozhoua"));
-    statusLabel->setStyleSheet("color: white");
-    statusBar()->setStyleSheet("background-color : rgb(30,30,30)");
+    statusLabel->setText(tr("Author:xxx"));
+    statusLabel->setStyleSheet("color: black");
+    statusBar()->setStyleSheet("background-color : rgb(120,120,120)");
 
     //PID 控制初始值控制
     ui->lineEdit->setText(tr("0"));
@@ -62,12 +64,22 @@ void MainWindow::system_init()
     ui->lineEdit_3->setText(tr("0"));
     ui->lineEdit_4->setText(tr("0"));
 
-    // 串口初始化配置
+
+    //设置串口端口
+    QStringList m_serialPortName;
+    m_serialPortName = getPortNameList();  //配置
+    qDebug()<<m_serialPortName;
+    ui->portId->clear();
+    ui->portId->addItems(m_serialPortName);
+
+    ui->baudRate->setCurrentIndex(2); //默认第3个波特率显示[0~n]
+
+    // 串口初始化配置 defaule:8N1
     global_port.setParity(QSerialPort::NoParity);  //无奇偶校验位
-    global_port.setDataBits(QSerialPort::Data8);   //8位校验位
+    global_port.setDataBits(QSerialPort::Data8);   //8位数据位
     global_port.setStopBits(QSerialPort::OneStop); //停止位为1
     global_port.setFlowControl(QSerialPort::NoFlowControl);   //无流控制
-    connect(&global_port, SIGNAL(readyRead()), this, SLOT(receiveInfo()));
+    connect(&global_port, SIGNAL(readyRead()), this, SLOT(receiveRadar()));
 
     // 示波器初始化配置
     ui->customPlot->setBackground(QBrush(QColor("#474848")));
@@ -177,6 +189,61 @@ void MainWindow::plotCustom(QByteArray info)
         ui->textBrowser->append(tmpQStr);
         qDebug() << "Received Data: " << tmpQStr;
 }
+
+void MainWindow::plotCustom_radar(QByteArray info, QStringList datakeys)
+{
+        // 若示波器打开，开始解析数据
+        if (oscill_flag){
+// 通道名称设置标签
+            if (Received_Keys != datakeys){
+                // 只能够设置一次标签
+                qDebug() << "update keys";
+                Received_Keys = datakeys;
+
+                this->index = 0;
+                this->Ptext.clear();
+                this->XData.clear();
+                this->YData.clear();
+                // 清除画布
+                ui->customPlot->clearGraphs();
+                ui->customPlot->legend->setVisible(false);
+                ui->customPlot->replot();
+
+                ui->customPlot->legend->setVisible(true);  //右上角指示曲线的缩略框
+                ui->customPlot->legend->setBrush(QColor(100, 100, 100, 36));//设置图例背景颜色，可设置透明
+                ui->customPlot->legend->setTextColor(Qt::white);
+                for (int i=0; i < datakeys.size(); i++){
+                    ui->customPlot->addGraph();
+                    ui->customPlot->graph(i)->setPen(QPen(color[i]));
+                    ui->customPlot->graph(i)->setName(datakeys[i]);
+                    Ptext.push_back(datakeys[i]);
+                }
+            }
+
+            // 添加XData , YData 数据
+            XData.push_back(index);
+            YData.resize(datakeys.size());
+
+            for (int i = 0;  i < Ptext.size(); ++i) {
+                YData[i].push_back(info[i]);
+            }
+
+            //向坐标值赋值
+            for (int i=0; i < datakeys.size(); ++i){
+                ui->customPlot->graph(i)->addData(XData[index], YData[i][index]);
+            }
+            this->index++;
+            // 更新坐标
+            ui->customPlot->xAxis->setRange((ui->customPlot->graph(0)->dataCount()>1000)?
+                                                (ui->customPlot->graph(0)->dataCount()-1000):
+                                                0,
+                                            ui->customPlot->graph(0)->dataCount());
+            ui->customPlot->replot(QCustomPlot::rpQueuedReplot);  //实现重绘
+        }
+        // 向接收区打印
+//        ui->textBrowser->append(tmpQStr);
+//        qDebug() << "Received Data: " << tmpQStr;
+}
 /*-----------------------------------------------------------
  *                      slots
  * ----------------------------------------------------------*/
@@ -191,12 +258,12 @@ void MainWindow::on_OpenorClose_clicked()
         ui->OpenorClose->setText("关闭串口");
         this->OpenorClose_Flag = true;
 
-        //设置串口端口
-        QStringList m_serialPortName;
-        m_serialPortName = getPortNameList();  //配置
-        qDebug()<<m_serialPortName;
-        ui->portId->clear();
-        ui->portId->addItems(m_serialPortName);
+//        //设置串口端口
+//        QStringList m_serialPortName;
+//        m_serialPortName = getPortNameList();  //配置
+//        qDebug()<<m_serialPortName;
+//        ui->portId->clear();
+//        ui->portId->addItems(m_serialPortName);
 
         //Serial 配置
 
@@ -213,6 +280,23 @@ void MainWindow::on_OpenorClose_clicked()
         // 配置完成,开启串口
         global_port.open(QIODevice::ReadWrite);
         qDebug() << "Open Serial Successfully";
+
+//        unsigned char sw =0x01;//open
+//        unsigned char cmd =0x00;
+//        QByteArray sendData;
+//        sendData.resize(10);
+//        for(int n=0;n<10;n++){
+//        sendData[n]=uart_protocol.UART_Send(CTRL_BODY_DET,cmd,1,&sw)[n];
+//        global_port.write(sendData);
+//        }
+//        for(int n=0;n<10;n++){
+//        sendData[n]=uart_protocol.UART_Send(CTRL_HEARTBEAT_DET,cmd,1,&sw)[n];
+//        global_port.write(sendData);
+//        }
+//        for(int n=0;n<10;n++){
+//        sendData[n]=uart_protocol.UART_Send(CTRL_BREATHE_DET,cmd,1,&sw)[n];
+//        global_port.write(sendData);
+//        }
     }else{
         // 关闭串口
         global_port.close();
@@ -327,7 +411,7 @@ void MainWindow::on_openOscill_clicked()
         this->XData.clear();
         this->YData.clear();
         this->Received_Keys.clear();
-        // 清楚画布
+        // 清除画布
         ui->customPlot->clearGraphs();
         ui->customPlot->legend->setVisible(false);
         ui->customPlot->replot();
@@ -375,6 +459,47 @@ void MainWindow::receiveInfo()
                 frontData.insert(0,'{');
             }
          }
+    }
+}
+
+void MainWindow::receiveRadar()
+{
+    /*--------------------------------
+     *  接受雷达串口信息
+     *-------------------------------*/
+    QByteArray info = global_port.readAll();
+    static int wave=5;
+    QStringList list;
+    list<<"heartbeat_rate"<<"breathe_rate"<<"movement_value";
+
+    if(!info.isEmpty())
+    {
+        unsigned char rxData[info.size()];
+        for(short i=0;i<info.size();i++){
+            rxData[i]=(unsigned char)info.at(i);
+        }
+//        qDebug() << "Uart data: " << info.data();
+        uart_protocol.UART_Recv(rxData, info.size());
+        ui->textBrowser->append(info.toHex());        // 向接收区打印
+
+        uart_protocol.UART_Service();
+
+        if(0 == wave%5){
+            info.resize(3);
+            for(int i=0;i<5;i++){
+                info[0]=uart_protocol.radarData->heartbeat_wave[i]+128;
+                info[1]=uart_protocol.radarData->breathe_wave[i]+128;
+                info[2]=uart_protocol.radarData->movement_value;
+                plotCustom_radar(info, list);
+            }
+        }
+        wave ++;
+
+        ui->lineEdit->setText(QString::number(uart_protocol.radarData->breathe_rate));
+        ui->lineEdit_2->setText(QString::number(uart_protocol.radarData->heartbeat_rate));
+        ui->lineEdit_3->setText(QString::number(uart_protocol.radarData->movement_value));
+        ui->lineEdit_4->setText(QString::number(uart_protocol.radarData->human_dist));
+
     }
 }
 

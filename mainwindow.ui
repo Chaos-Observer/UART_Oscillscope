@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>859</width>
-    <height>584</height>
+    <width>836</width>
+    <height>612</height>
    </rect>
   </property>
   <property name="font">
@@ -348,7 +348,7 @@ QPushButton:hover{
                </font>
               </property>
               <property name="text">
-               <string>I:</string>
+               <string>心率:</string>
               </property>
              </widget>
             </item>
@@ -363,7 +363,7 @@ QPushButton:hover{
                </font>
               </property>
               <property name="text">
-               <string>D:      </string>
+               <string>体动:      </string>
               </property>
              </widget>
             </item>
@@ -394,7 +394,7 @@ QPushButton:hover{
                </font>
               </property>
               <property name="text">
-               <string>P:</string>
+               <string>呼吸率:</string>
               </property>
              </widget>
             </item>
@@ -432,7 +432,7 @@ QPushButton:hover{
             <item row="7" column="0">
              <widget class="QLabel" name="label_9">
               <property name="text">
-               <string>目标值：</string>
+               <string>距离值：</string>
               </property>
              </widget>
             </item>
@@ -619,7 +619,7 @@ QTextBrowser{
           </font>
          </property>
          <property name="text">
-          <string>2021功率国赛工具—串口示波器</string>
+          <string>串口示波器</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>

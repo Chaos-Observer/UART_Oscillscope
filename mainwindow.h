@@ -7,6 +7,8 @@
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include "qcustomplot.h"
+#include "uart_protocol.h"
+
 //#include <QtCharts>
 
 /*-------------class------------------*/
@@ -35,6 +37,7 @@ public:
 
     void buildChart();                                      //创建图表函数
     void plotCustom(QByteArray info);
+    void plotCustom_radar(QByteArray info, QStringList datakeys);
 
 private slots:
     void on_OpenorClose_clicked();
@@ -50,6 +53,8 @@ private slots:
     void on_openOscill_clicked();
 
     void receiveInfo();
+
+    void receiveRadar(); //radar data recv.
 
     void on_clearReceived_clicked();
 
