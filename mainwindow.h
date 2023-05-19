@@ -37,7 +37,7 @@ public:
 
     void buildChart();                                      //创建图表函数
     void plotCustom(QByteArray info);
-    void plotCustom_radar(QByteArray info, QStringList datakeys);
+    void plotCustom_radar(uchar *info, QStringList datakeys);
 
 private slots:
     void on_OpenorClose_clicked();

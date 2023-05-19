@@ -619,7 +619,7 @@ QTextBrowser{
           </font>
          </property>
          <property name="text">
-          <string>串口示波器</string>
+          <string>数据示波器</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>

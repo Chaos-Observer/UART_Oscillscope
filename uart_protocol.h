@@ -75,6 +75,8 @@ public:
         unsigned char breathe_wave[5];
         unsigned char breathe_result;
 
+        unsigned char module_blink;
+
         unsigned char heartbeat_rate;
         unsigned char heartbeat_wave[5];
 

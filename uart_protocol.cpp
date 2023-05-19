@@ -200,7 +200,13 @@ int UART_Protocol::data_Parse(unsigned short offset)
     switch(ctrl_type)
     {
             case CTRL_SYS_FUNC:                                     //模块系统功能
-                printf("radar heartbeat");
+                if(0x01 == cmd_type || 0x80 == cmd_type){
+                    radarData->module_blink = data_process_buf[offset + DATA_START];//在模组心跳检测判断结束后置零
+                }else if (0x02 == cmd_type) {
+                    printf("module reset!\n");
+                }else{
+                    printf("unkown module info!\n");
+                }
                 break;
 
             case CTRL_PRODUCT_INFO:                                  //产品信息
@@ -221,7 +227,7 @@ int UART_Protocol::data_Parse(unsigned short offset)
                         radarData->productInfo.fw_ver[i] = (unsigned char)data_process_buf[offset + DATA_START + i];
                     }
                 }else{
-                    printf("unkown product info!");
+                    printf("unkown product info!\n");
                 }
                 break;
 
@@ -249,7 +255,7 @@ int UART_Protocol::data_Parse(unsigned short offset)
                 }else if (0x00 == cmd_type || 0x80 == cmd_type) {
                     radarData->exist_sw = (bool)data_process_buf[offset + DATA_START];
                 }else{
-//                        printf("unkown body info!");
+//                        printf("unkown body info!\n");
                 }
                 break;
 
@@ -265,7 +271,7 @@ int UART_Protocol::data_Parse(unsigned short offset)
                 }else if (0x00 == cmd_type || 0x80 == cmd_type) {
                     radarData->breathe_sw = (bool)data_process_buf[offset + DATA_START];
                 }else{
-                    printf("unkown breathe info!");
+                    printf("unkown breathe info!\n");
                 }
                 break;
 
@@ -277,7 +283,7 @@ int UART_Protocol::data_Parse(unsigned short offset)
                 }else if (0x00 == cmd_type || 0x80 == cmd_type) {
                     radarData->sleep_sw = (bool)data_process_buf[offset + DATA_START];
                 }else{
-                    printf("unkown sleeping info!");
+                    printf("unkown sleeping info!\n");
                 }
                 break;
 
@@ -291,12 +297,12 @@ int UART_Protocol::data_Parse(unsigned short offset)
                 }else if (0x00 == cmd_type || 0x80 == cmd_type) {
                     radarData->heart_sw = (bool)data_process_buf[offset + DATA_START];
                 }else{
-                    printf("unkown heartbeat info!");
+                    printf("unkown heartbeat info!\n");
                 }
                 break;
 
             default:
-                printf("unkown info detect!");
+                printf("unkown info detect!\n");
                 break;
     }
 

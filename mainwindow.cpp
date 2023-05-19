@@ -189,7 +189,7 @@ void MainWindow::plotCustom(QByteArray info)
         qDebug() << "Received Data: " << tmpQStr;
 }
 
-void MainWindow::plotCustom_radar(QByteArray info, QStringList datakeys)
+void MainWindow::plotCustom_radar(uchar *info, QStringList datakeys)
 {
         // 若示波器打开，开始解析数据
         if (oscill_flag){
@@ -224,7 +224,7 @@ void MainWindow::plotCustom_radar(QByteArray info, QStringList datakeys)
             YData.resize(datakeys.size());
 
             for (int i = 0;  i < Ptext.size(); ++i) {
-                YData[i].push_back(info[i]+128);//调节零点
+                YData[i].push_back(info[i]);//调节零点
             }
 
             //向坐标值赋值
@@ -465,6 +465,7 @@ void MainWindow::receiveRadar()
      *-------------------------------*/
     QByteArray info = global_port.readAll();
     static int wave=5;
+    uchar wave_data[3]={0x80};
     QStringList list;
     list<<"heartbeat_rate"<<"breathe_rate"<<"movement_value";
 
@@ -476,17 +477,16 @@ void MainWindow::receiveRadar()
         }
 //        qDebug() << "Uart data: " << info.data();
         uart_protocol.UART_Recv(rxData, info.size());
-        ui->textBrowser->append(info.toHex());        // 向接收区打印
+        ui->textBrowser->append(info.toHex(' '));        // 向接收区打印,增加空格
 
         uart_protocol.UART_Service();
 
         if(0 == wave%5){
-            info.resize(3);
             for(int i=0;i<5;i++){
-                info[0]=uart_protocol.radarData->heartbeat_wave[i]+128;
-                info[1]=uart_protocol.radarData->breathe_wave[i]+128;
-                info[2]=uart_protocol.radarData->movement_value;
-                plotCustom_radar(info, list);
+                wave_data[0]=uart_protocol.radarData->heartbeat_wave[i];
+                wave_data[1]=uart_protocol.radarData->breathe_wave[i];
+                wave_data[2]=uart_protocol.radarData->movement_value;
+                plotCustom_radar(wave_data, list);
             }
         }
         wave ++;
