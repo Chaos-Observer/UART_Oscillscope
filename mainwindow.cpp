@@ -13,8 +13,8 @@
 #include <qjsonvalue.h>
 
 const int color[10]={
-    0xff0000,0xffff00,0x00ff00,0x0000ff,0xff00ff,
-    0xff8000,0xc0ff00,0x00ffff,0x8000ff,0x000001,
+    0xff0000,0x00ff00,0x0000ff,0xff8000,0xff00ff,
+    0xffff00,0xc0ff00,0x00ffff,0x8000ff,0x000001,
 };
 
 UART_Protocol uart_protocol;
@@ -55,8 +55,8 @@ void MainWindow::system_init()
     statusLabel->setFrameShadow(QFrame::Sunken); // 设置标签阴影
     ui->statusbar->addWidget(statusLabel);
     statusLabel->setText(tr("Author:xxx"));
-    statusLabel->setStyleSheet("color: black");
-    statusBar()->setStyleSheet("background-color : rgb(120,120,120)");
+    statusLabel->setStyleSheet("color: white");
+    statusBar()->setStyleSheet("background-color : rgb(20,20,20)");
 
     //PID 控制初始值控制
     ui->lineEdit->setText(tr("0"));
@@ -81,8 +81,6 @@ void MainWindow::system_init()
     global_port.setFlowControl(QSerialPort::NoFlowControl);   //无流控制
     connect(&global_port, SIGNAL(readyRead()), this, SLOT(receiveRadar()));
 
-    // 示波器初始化配置
-    ui->customPlot->setBackground(QBrush(QColor("#474848")));
 }
 
 QStringList MainWindow::getPortNameList()
@@ -98,17 +96,18 @@ QStringList MainWindow::getPortNameList()
     }
     return m_serialPortName;
 }
-//ui->customPlot->setBackground(QBrush(QColor("#000000")));
+
 void MainWindow::buildChart()
 {
     /*--------------------------------
      *  构造示波器
      *-------------------------------*/
-    ui->customPlot->setBackground(QBrush(QColor("#474848")));
+//    ui->customPlot->setBackground(QBrush(QColor(200,200,200,12)));//背景颜色
     ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);      //可拖拽+可滚轮缩放
 
-    ui->customPlot->axisRect()->setupFullAxesBox();
-    ui->customPlot->yAxis->setRange(0, 3.3);
+    ui->customPlot->axisRect()->setupFullAxesBox(true);//modify from null to true
+    ui->customPlot->yAxis->setRange(-3, 260);//y轴范围
+    ui->customPlot->xAxis->setRange(0, 100);//x轴范围
 }
 
 void MainWindow::plotCustom(QByteArray info)
@@ -208,10 +207,10 @@ void MainWindow::plotCustom_radar(QByteArray info, QStringList datakeys)
                 ui->customPlot->clearGraphs();
                 ui->customPlot->legend->setVisible(false);
                 ui->customPlot->replot();
-
+//                ui->customPlot->setBackground(QBrush(QColor(180,180,180,0)));//清除画布后需要重设
                 ui->customPlot->legend->setVisible(true);  //右上角指示曲线的缩略框
-                ui->customPlot->legend->setBrush(QColor(100, 100, 100, 36));//设置图例背景颜色，可设置透明
-                ui->customPlot->legend->setTextColor(Qt::white);
+                ui->customPlot->legend->setBrush(QColor(100, 100, 100, 0));//设置图例背景颜色，可设置透明
+                ui->customPlot->legend->setTextColor(Qt::black);
                 for (int i=0; i < datakeys.size(); i++){
                     ui->customPlot->addGraph();
                     ui->customPlot->graph(i)->setPen(QPen(color[i]));
@@ -225,7 +224,7 @@ void MainWindow::plotCustom_radar(QByteArray info, QStringList datakeys)
             YData.resize(datakeys.size());
 
             for (int i = 0;  i < Ptext.size(); ++i) {
-                YData[i].push_back(info[i]);
+                YData[i].push_back(info[i]+128);//调节零点
             }
 
             //向坐标值赋值
@@ -234,15 +233,12 @@ void MainWindow::plotCustom_radar(QByteArray info, QStringList datakeys)
             }
             this->index++;
             // 更新坐标
-            ui->customPlot->xAxis->setRange((ui->customPlot->graph(0)->dataCount()>1000)?
-                                                (ui->customPlot->graph(0)->dataCount()-1000):
+            ui->customPlot->xAxis->setRange((ui->customPlot->graph(0)->dataCount()>100)?
+                                                (ui->customPlot->graph(0)->dataCount()-100):
                                                 0,
                                             ui->customPlot->graph(0)->dataCount());
             ui->customPlot->replot(QCustomPlot::rpQueuedReplot);  //实现重绘
         }
-        // 向接收区打印
-//        ui->textBrowser->append(tmpQStr);
-//        qDebug() << "Received Data: " << tmpQStr;
 }
 /*-----------------------------------------------------------
  *                      slots
@@ -415,7 +411,7 @@ void MainWindow::on_openOscill_clicked()
         ui->customPlot->clearGraphs();
         ui->customPlot->legend->setVisible(false);
         ui->customPlot->replot();
-        ui->customPlot->setBackground(QBrush(QColor("#474848")));
+//        ui->customPlot->setBackground(QBrush(QColor(200,200,200,0)));
         ui->openOscill->setText("打开示波器");
     }
 }
