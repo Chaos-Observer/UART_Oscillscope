@@ -224,7 +224,7 @@ void MainWindow::plotCustom_radar(uchar *info, QStringList datakeys)
             YData.resize(datakeys.size());
 
             for (int i = 0;  i < Ptext.size(); ++i) {
-                YData[i].push_back(info[i]);//调节零点
+                YData[i].push_back(info[i]);//如果是QByteArray需要(uchar)转换调节零点
             }
 
             //向坐标值赋值
@@ -495,6 +495,23 @@ void MainWindow::receiveRadar()
         ui->lineEdit_2->setText(QString::number(uart_protocol.radarData->heartbeat_rate));
         ui->lineEdit_3->setText(QString::number(uart_protocol.radarData->movement_value));
         ui->lineEdit_4->setText(QString::number(uart_protocol.radarData->human_dist));
+
+        if(uart_protocol.radarData->human_det){
+            ui->label_exist->setText("人体存在：有人");
+        }else{
+            ui->label_exist->setText("人体存在：无人");
+        }
+
+        if(0x01 == uart_protocol.radarData->breathe_result){
+            ui->label_breathe->setText("呼吸：正常");
+        }else if(0x03 == uart_protocol.radarData->breathe_result){
+            ui->label_breathe->setText("呼吸：过低");
+        }else if(0x02 == uart_protocol.radarData->breathe_result){
+            ui->label_breathe->setText("呼吸：过高");
+        }else{
+            ui->label_breathe->setText("呼吸：无");
+        }
+
 
     }
 }

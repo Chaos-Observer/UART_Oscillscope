@@ -608,24 +608,6 @@ QTextBrowser{
        <item row="3" column="1">
         <widget class="QTextBrowser" name="textBrowser"/>
        </item>
-       <item row="0" column="0" colspan="2">
-        <widget class="QLabel" name="label">
-         <property name="font">
-          <font>
-           <family>楷体</family>
-           <pointsize>-1</pointsize>
-           <weight>87</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>数据示波器</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
        <item row="1" column="0" colspan="2">
         <widget class="QCustomPlot" name="customPlot" native="true"/>
        </item>
@@ -658,6 +640,31 @@ QTextBrowser{
          </property>
          <property name="text">
           <string>接收区</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_exist">
+         <property name="font">
+          <font>
+           <family>楷体</family>
+           <pointsize>-1</pointsize>
+           <weight>87</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>人体存在</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLabel" name="label_breathe">
+         <property name="text">
+          <string>呼吸</string>
          </property>
         </widget>
        </item>
