@@ -2,5 +2,7 @@
     <qresource prefix="/Images">
         <file>Icons/gtk-help.png</file>
         <file>Icons/Alien 2.png</file>
+        <file>Icons/angle.png</file>
+        <file>Icons/nest.png</file>
     </qresource>
 </RCC>

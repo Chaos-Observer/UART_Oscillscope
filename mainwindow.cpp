@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    this->setWindowIcon(QIcon(":/Images/Icons/Alien 2.png"));
+    this->setWindowIcon(QIcon(":/Images/Icons/nest.png"));
     this->setWindowTitle(tr("虚拟示波器"));
     this->system_init();  //系统各组件初始化
 }
@@ -329,7 +329,7 @@ void MainWindow::on_sendPIDData_clicked()
     }else{
         QMessageBox box;
         box.setWindowTitle(tr("警告"));
-        box.setWindowIcon(QIcon(":/Images/Icons/Alien 2.png"));
+        box.setWindowIcon(QIcon(":/Images/Icons/angle.png"));
         box.setIcon(QMessageBox::Warning);
         box.setText(tr(" 未检测到串口，请确认串口是否打开？"));
         box.exec();
@@ -351,7 +351,7 @@ void MainWindow::on_sendData_clicked()
     }else{
         QMessageBox box;
         box.setWindowTitle(tr("警告"));
-        box.setWindowIcon(QIcon(":/Images/Icons/Alien 2.png"));
+        box.setWindowIcon(QIcon(":/Images/Icons/angle.png"));
         box.setIcon(QMessageBox::Warning);
         box.setText(tr(" 未检测到串口，请确认串口是否打开？"));
         box.exec();
@@ -394,7 +394,7 @@ void MainWindow::on_openOscill_clicked()
         }else{
             QMessageBox box;
             box.setWindowTitle(tr("警告"));
-            box.setWindowIcon(QIcon(":/Images/Icons/Alien 2.png"));
+            box.setWindowIcon(QIcon(":/Images/Icons/angle.png"));
             box.setIcon(QMessageBox::Warning);
             box.setText(tr(" 未检测到串口，请确认串口是否打开？"));
             box.exec();
@@ -465,7 +465,7 @@ void MainWindow::receiveRadar()
      *-------------------------------*/
     QByteArray info = global_port.readAll();
     static int wave=5;
-    uchar wave_data[3]={0x80};
+    static uchar wave_data[3]={0x80};
     QStringList list;
     list<<"heartbeat_rate"<<"breathe_rate"<<"movement_value";
 
@@ -481,15 +481,17 @@ void MainWindow::receiveRadar()
 
         uart_protocol.UART_Service();
 
-        if(0 == wave%5){
+//        if(0 == wave%5){
             for(int i=0;i<5;i++){
+                if(wave_data[0] != uart_protocol.radarData->heartbeat_wave[4] ){
                 wave_data[0]=uart_protocol.radarData->heartbeat_wave[i];
                 wave_data[1]=uart_protocol.radarData->breathe_wave[i];
                 wave_data[2]=uart_protocol.radarData->movement_value;
                 plotCustom_radar(wave_data, list);
+                }
             }
-        }
-        wave ++;
+//        }
+//        wave ++;
 
         ui->lineEdit->setText(QString::number(uart_protocol.radarData->breathe_rate));
         ui->lineEdit_2->setText(QString::number(uart_protocol.radarData->heartbeat_rate));
