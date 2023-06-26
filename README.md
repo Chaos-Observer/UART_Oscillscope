@@ -8,4 +8,4 @@ In order to facilitate the viewing of the data collected by the ADC of the micro
 
 ## User Interface
 
-![示波器1](https://cdn.jsdelivr.net/gh/Miller-em/IMAGS/img/20210812170729.gif)
+![image](https://github.com/Chaos-Observer/UART_Oscillscope/assets/49436314/38122d7d-2d0a-43ba-a0ba-74b2f28519bb)
