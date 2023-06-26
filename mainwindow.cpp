@@ -466,6 +466,7 @@ void MainWindow::receiveRadar()
     QByteArray info = global_port.readAll();
     static int wave=5;
     static uchar wave_data[3]={0x80};
+    char heart_wave=0,breath_wave=0;
     QStringList list;
     list<<"heartbeat_rate"<<"breathe_rate"<<"movement_value";
 
@@ -481,17 +482,33 @@ void MainWindow::receiveRadar()
 
         uart_protocol.UART_Service();
 
-//        if(0 == wave%5){
-            for(int i=0;i<5;i++){
-                if(wave_data[0] != uart_protocol.radarData->heartbeat_wave[4] ){
+
+        for(int i=0;i<5;i++){
+            if(0 == wave%5){
+//                if(wave_data[0] != uart_protocol.radarData->heartbeat_wave[4] ){
                 wave_data[0]=uart_protocol.radarData->heartbeat_wave[i];
                 wave_data[1]=uart_protocol.radarData->breathe_wave[i];
                 wave_data[2]=uart_protocol.radarData->movement_value;
                 plotCustom_radar(wave_data, list);
-                }
+//                }
             }
-//        }
-//        wave ++;
+            heart_wave +=uart_protocol.radarData->heartbeat_wave[i] - 0x80;
+            breath_wave +=uart_protocol.radarData->breathe_wave[i] - 0x80;
+        }
+        wave ++;
+        if(heart_wave < 2 && heart_wave > -2){
+            uart_protocol.radarData->human_det = 0;
+            uart_protocol.radarData->heartbeat_rate = 0;
+        }
+        else{
+            uart_protocol.radarData->human_det = 1;
+        }
+        if(breath_wave < 2 && breath_wave > -2){
+            uart_protocol.radarData->breathe_result = 0;
+            uart_protocol.radarData->breathe_rate = 0;
+        }else{
+            uart_protocol.radarData->breathe_result = 1;
+        }//value filter
 
         ui->lineEdit->setText(QString::number(uart_protocol.radarData->breathe_rate));
         ui->lineEdit_2->setText(QString::number(uart_protocol.radarData->heartbeat_rate));
